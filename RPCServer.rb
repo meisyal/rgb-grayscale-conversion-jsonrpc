@@ -3,8 +3,8 @@ require 'jimson'
 class MyHandler
   extend Jimson::Handler
 
-  def sum(a,b)
-    a + b
+  def convert(data)
+    receive = data
   end
 end
 
