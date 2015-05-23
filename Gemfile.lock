@@ -9,6 +9,7 @@ GEM
       rest-client (~> 1.6.7)
     json (1.8.2)
     mime-types (1.25.1)
+    mini_magick (4.2.4)
     multi_json (1.7.9)
     rack (1.4.5)
     rdoc (4.2.0)
@@ -22,3 +23,4 @@ PLATFORMS
 
 DEPENDENCIES
   jimson (~> 0.10.0)
+  mini_magick
