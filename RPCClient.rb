@@ -1,9 +1,6 @@
 require 'jimson'
 require 'base64'
-
-def count_files(filepath)
-  count = Dir[filepath].length
-end
+require 'thread'
 
 def file_name(file)
   result = file.split('.')[0]
@@ -21,32 +18,62 @@ def encode(filepath)
   return contents
 end
 
-client = Jimson::Client.new("http://www.example.com:8999") # the URL for the JSON-RPC 2.0 server to connect to
+# define worker here
+client_array = Array.new
+client_array << Jimson::Client.new("http://www.example.com:8999") # the URL for the JSON-RPC 2.0 server to connect to
 
+# define source and destination path
 imagepath = 'your/image/path/here'
 destinationpath = 'your/destination/image/path/here'
 
 # add time start
 start = Time.now
 
-Dir.foreach(imagepath) do |file|
+# create an item queue
+item_queue = Queue.new
+# read file on directory and push them to queue
+Dir.foreach(imagepath) do |i|
   # skip reading the parent and current directories
-  next if file == '.' or file == '..'
-  # encode binary file to base64
-  data = encode(imagepath + file)
-  # call the 'convert' method on the RPC server and save the result
-  conversion = client.convert(data, file)
-  # write log on terminal
-  puts "#{file} has been sent successfully"
-  # get file name without extensions
-  filename = file_name(file)
-  # get file extensions
-  extensions = file_extensions(file)
-  # decode received data from base64
-  File.open(destinationpath + filename + "_grayscale." + extensions, 'wb') do |f|
-    f.write(Base64.decode64(conversion))
-  end
+  next if i == '.' or i == '..'
+  item_queue.push(i)
 end
+
+# create a thread array
+thread_array = Array.new
+
+# start worker using thread
+client_array.each do |client|
+  new_thread = Thread.new do
+    # loop until there are no more things to do
+    until item_queue.empty?
+      # pop with the non-blocking flag set, this raises
+      # an exception if the queue is empty, in which case
+      # item will be set to nil
+      item = item_queue.pop(true) rescue nil
+      if item
+        # write log on terminal
+        puts item
+        # encode binary file to base64
+        data = encode(imagepath + item)
+        conversion = client.convert(data, item)
+        # write log on terminal if image has been sent
+        puts "#{item} has been sent successfully"
+        # get file name without extensions
+        filename = file_name(item)
+        # get file extensions
+        extensions = file_extensions(item)
+        # decode received data from base64
+        File.open(destinationpath + filename + "_grayscale." + extensions, 'wb') do |f|
+          f.write(Base64.decode64(conversion))
+        end
+      end
+    end
+  end
+  thread_array << new_thread
+end
+
+# synchronize threads
+thread_array.each { |t| t.join }
 
 # add time finish and calculate
 finish = Time.now
