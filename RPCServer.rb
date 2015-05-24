@@ -5,20 +5,20 @@ require 'mini_magick'
 class MyHandler
   extend Jimson::Handler
 
-  def convert(data, filename)
+  def convert(data, file)
     # edit temporary path as you want
     temppath = 'your/temporary/path/here'
     # decode received data from base64
-    File.open(temppath + filename, 'wb') do |file|
-      file.write(Base64.decode64(data))
+    File.open(temppath + file, 'wb') do |f|
+      f.write(Base64.decode64(data))
     end
     # convert to grayscape using ImageMagick and RMagick
-    image = MiniMagick::Image.open(temppath + filename)
+    image = MiniMagick::Image.open(temppath + file)
     image = image.colorspace("Gray")
-    image.write(temppath + filename)
+    image.write(temppath + file)
 
     # encode converted image
-    f = File.open(temppath + filename, "rb")
+    f = File.open(temppath + file, "rb")
     contents = Base64.encode64(f.read)
     f.close
 
