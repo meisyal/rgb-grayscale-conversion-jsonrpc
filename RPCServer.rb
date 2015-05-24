@@ -6,22 +6,17 @@ class MyHandler
   extend Jimson::Handler
 
   def convert(data, file)
-    # edit temporary path as you want
-    temppath = 'your/temporary/path/here'
-    # decode received data from base64
-    File.open(temppath + file, 'wb') do |f|
-      f.write(Base64.decode64(data))
-    end
+    # print the time when image is sent
+    puts "Image received #{Time.now}"
+
+    # decode received data from base64 and
     # convert to grayscape using ImageMagick and RMagick
-    image = MiniMagick::Image.open(temppath + file)
+    image = MiniMagick::Image.read(Base64.decode64(data))
     image = image.colorspace("Gray")
-    image.write(temppath + file)
 
-    # encode converted image
-    f = File.open(temppath + file, "rb")
-    contents = Base64.encode64(f.read)
-    f.close
-
+    # encode converted image (blob)
+    contents = Base64.encode64(image.to_blob)
+    puts "Image sent #{Time.now}"
     receive = contents
   end
 end
