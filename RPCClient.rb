@@ -5,8 +5,12 @@ def count_files(filepath)
   count = Dir[filepath].length
 end
 
-def file_extensions(filename)
-  File.extname(filename).delete('.')
+def file_name(file)
+  result = file.split('.')[0]
+end
+
+def file_extensions(file)
+  File.extname(file).delete('.')
 end
 
 def encode(filepath)
@@ -22,17 +26,30 @@ client = Jimson::Client.new("http://www.example.com:8999") # the URL for the JSO
 imagepath = 'your/image/path/here'
 destinationpath = 'your/destination/image/path/here'
 
-Dir.foreach(imagepath) do |filename|
+# add time start
+start = Time.now
+
+Dir.foreach(imagepath) do |file|
   # skip reading the parent and current directories
-  next if filename == '.' or filename == '..'
+  next if file == '.' or file == '..'
   # encode binary file to base64
-  data = encode(imagepath + filename)
+  data = encode(imagepath + file)
   # call the 'convert' method on the RPC server and save the result
-  result = client.convert(data, filename)
+  conversion = client.convert(data, file)
   # write log on terminal
-  puts filename
+  puts "#{file} has been sent successfully"
+  # get file name without extensions
+  filename = file_name(file)
+  # get file extensions
+  extensions = file_extensions(file)
   # decode received data from base64
-  File.open(destinationpath + "grayscale_" + filename, 'wb') do |f|
-    f.write(Base64.decode64(result))
+  File.open(destinationpath + filename + "_grayscale." + extensions, 'wb') do |f|
+    f.write(Base64.decode64(conversion))
   end
 end
+
+# add time finish and calculate
+finish = Time.now
+difference = finish - start
+# print total time
+puts "Total time #{difference} seconds"
