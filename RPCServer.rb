@@ -5,7 +5,7 @@ require 'mini_magick'
 class MyHandler
   extend Jimson::Handler
 
-  def convert(data, file)
+  def convert(data)
     # print the time when image is sent
     puts "Image received #{Time.now}"
 
