@@ -55,7 +55,7 @@ client_array.each do |client|
         puts item
         # encode binary file to base64
         data = encode(imagepath + item)
-        conversion = client.convert(data, item)
+        conversion = client.convert(data)
         # write log on terminal if image has been sent
         puts "#{item} has been sent successfully"
         # get file name without extensions
@@ -72,7 +72,7 @@ client_array.each do |client|
   thread_array << new_thread
 end
 
-# synchronize threads
+# synchronize all threads
 thread_array.each { |t| t.join }
 
 # add time finish and calculate
